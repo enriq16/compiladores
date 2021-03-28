@@ -30,8 +30,8 @@ char paraImprimir[100];
 char lexema[TAMLEX];	// Utilizado por el analizador lexico
 int delantero=-1;		// Utilizado por el analizador lexico
 int fin=0;				// Utilizado por el analizador lexico
-int numLinea = 0;			// Numero de Linea
-int lineaVacia;
+int numLinea = 0;		// Numero de Linea
+int lineaVacia;			//Indica si se va a imprimir la linea 'paraImprimir'
 
 /**************** Funciones **********************/
 
@@ -51,7 +51,7 @@ void getToken()
 	int estado=0;
 	char msg[41];
 	entrada e;
-	int leer = 0;
+	int leer = 0;//en caso de erro hace que se lea hasta el final de la linea
 
 	while((c=fgetc(archivo))!=EOF)
 	{
@@ -64,8 +64,9 @@ void getToken()
 		}
 		else if(c==' ' || c=='\t' || leer)
 		{
-			continue;	//eliminar espacios en blanco
+			continue;	//eliminar espacios en blanco o leer hasta fin de linea			
 		}else if(c == '"'){
+			entrada e;
 			i = 0;
 			strcpy(lexema, "");
 			
@@ -118,10 +119,10 @@ void getToken()
 					if (t.pe->compLex==-1)
 					{
 						strcpy(e.lexema,lexema);
-						e.compLex=ID;
+						e.compLex = STRING;
 						insertar(e);
 						t.pe=buscar(lexema);
-						t.compLex=ID;
+						t.compLex = STRING;
 					}
 					
 					lineaVacia = 0;
@@ -375,7 +376,7 @@ void getToken()
 			}
 
 
-			t.compLex = BOOL;
+			t.compLex = PR_BOOLEAN;
 			t.pe=buscar("false");
 			
 
@@ -427,12 +428,60 @@ void getToken()
 			}
 
 			
-			t.compLex = BOOL;
+			t.compLex = PR_BOOLEAN;
 			t.pe=buscar("true");		
 
 
 			lineaVacia = 0;
 			strcat(paraImprimir, "PR_TRUE ");
+		}else if(tolower(c)=='n'){
+			i=0;			
+			strcpy(lexema, "");
+			lexema[i]=c;
+			i++;
+			c=fgetc(archivo);
+			if(tolower(c)=='u'){
+				lexema[i]=c;
+				i++;
+			}else{
+				lineaVacia = 1;
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c'", c); 
+				error(msg);								
+				continue;
+			}
+
+			c=fgetc(archivo);
+			if(tolower(c)=='l'){
+				lexema[i]=c;
+				i++;
+			}else{
+				lineaVacia = 1;
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c'", c); 
+				error(msg);								
+				continue;
+			}
+
+			c=fgetc(archivo);
+			if(tolower(c)=='l'){
+				lexema[i]=c;
+				i++;
+			}else{
+				lineaVacia = 1;
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c'", c); 
+				error(msg);								
+				continue;
+			}
+
+			
+			t.compLex = PR_NULL;
+			t.pe=buscar("PR_NULL");		
+
+
+			lineaVacia = 0;
+			strcat(paraImprimir, "PR_NULL ");
 		}
 		else if (c!=EOF)
 		{
