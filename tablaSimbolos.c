@@ -147,8 +147,9 @@ void initTablaSimbolos()
 	*/
 
 
-	insertTablaSimbolos("NUMBER", 256);
-	insertTablaSimbolos("STRING", 257);
+	insertTablaSimbolos("NUMBER", NUM);
+	insertTablaSimbolos("STRING", STRING);
+	insertTablaSimbolos("PR_NULL", PR_NULL);
 
 	insertTablaSimbolos(",",',');
 	//insertTablaSimbolos(".",'.');
@@ -158,8 +159,8 @@ void initTablaSimbolos()
 	insertTablaSimbolos(")",')');
 	insertTablaSimbolos("[",'[');
 	insertTablaSimbolos("]",']');
-	insertTablaSimbolos("true",BOOL);
-	insertTablaSimbolos("false",BOOL);
+	insertTablaSimbolos("true",PR_BOOLEAN);
+	insertTablaSimbolos("false",PR_BOOLEAN);
 	/*
 	insertTablaSimbolos("not",NOT);
 	insertTablaSimbolos("<",OPREL);
