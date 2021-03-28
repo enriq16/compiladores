@@ -106,6 +106,8 @@ void insertTablaSimbolos(const char *s, int n)
 
 void initTablaSimbolos()
 {
+
+	/*
 	int i;
 	const char *vector[]={
 		"program",
@@ -137,20 +139,28 @@ void initTablaSimbolos()
 		"write",
 		"const"
 	};
+	
  	for (i=0;i<28;i++)
 	{
 		insertTablaSimbolos(vector[i],i+256);
 	}
+	*/
+
+
+	insertTablaSimbolos("NUMBER", 256);
+	insertTablaSimbolos("STRING", 257);
+
 	insertTablaSimbolos(",",',');
-	insertTablaSimbolos(".",'.');
+	//insertTablaSimbolos(".",'.');
 	insertTablaSimbolos(":",':');
-	insertTablaSimbolos(";",';');
+	//insertTablaSimbolos(";",';');
 	insertTablaSimbolos("(",'(');
 	insertTablaSimbolos(")",')');
 	insertTablaSimbolos("[",'[');
 	insertTablaSimbolos("]",']');
 	insertTablaSimbolos("true",BOOL);
 	insertTablaSimbolos("false",BOOL);
+	/*
 	insertTablaSimbolos("not",NOT);
 	insertTablaSimbolos("<",OPREL);
 	insertTablaSimbolos("<=",OPREL);
@@ -166,4 +176,5 @@ void initTablaSimbolos()
 	insertTablaSimbolos("div",OPMULT);
 	insertTablaSimbolos("mod",OPMULT);
 	insertTablaSimbolos(":=",OPASIGNA);
+	*/
 }
