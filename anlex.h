@@ -46,6 +46,8 @@
 #define OPMULT		292
 #define OPASIGNA	293
 #define USER_TYPE	294
+#define PR_NULL     295
+#define STRING      296
 // Fin Codigos
 #define TAMBUFF 	5
 #define TAMLEX 		50
