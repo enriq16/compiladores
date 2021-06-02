@@ -51,14 +51,16 @@ void getToken()
 	int estado=0;
 	char msg[41];
 	
-	int leer = 0;//en caso de erro hace que se lea hasta el final de la linea
+	int leer = 1;//en caso de erro hace que se lea hasta el final de la linea
 
 	while((c=fgetc(archivo))!=EOF)
 	{
 		entrada e;
 
-		if (c==' ' || c=='\t' || leer)
-			continue;	//eliminar espacios en blanco
+		if (c==' ' || c=='\t')
+			continue;	//eliminar espacios en blanco		
+		else if(!leer)
+			continue;
 		else if(c=='\n')
 		{
 			//incrementar el numero de linea
@@ -106,11 +108,13 @@ void getToken()
                         }
                         strcat(paraImprimir, "STRING ");
 					}else{ 
-						leer = 1;
+						leer = 0;
 						lexema[i] = '\0';						
-						sprintf(msg, "El String '%s', no termina correctamente ", lexema); 
-						strcat(paraImprimir, msg);													
-						ungetc(c,archivo);
+						sprintf(msg, "El String '%s', no termina correctamente", lexema); 
+						strcat(paraImprimir, msg);
+						if(c==EOF)													
+							ungetc(c,archivo);
+						
 						continue;
 					}														
 				}else if (c == '"'){
@@ -134,8 +138,9 @@ void getToken()
 					sprintf(msg,"No se esperaba: '%c'",c);
 					strcat(paraImprimir, msg);
 					estado = -1;
-					leer = 1;					
-					ungetc(c,archivo);
+					leer = 0;					
+					if(c==EOF)													
+						ungetc(c,archivo);
 					continue;
 				}
 		}		
@@ -182,7 +187,7 @@ void getToken()
 						else{
 							sprintf(msg,"No se esperaba '%c'",c);							
 							estado = -1;
-							leer = 1;							
+							leer = 0;							
 						}
 						break;
 					case 2://la fraccion decimal, pueden seguir los digitos o e
@@ -215,7 +220,7 @@ void getToken()
 						else{
 							sprintf(msg,"No se esperaba '%c'",c);
 							estado=-1;
-							leer = 1;
+							leer = 0;
 						}
 						break;
 					case 4://necesariamente debe venir por lo menos un digito
@@ -303,7 +308,7 @@ void getToken()
 			t.compLex='[';
 			t.pe=buscar("[");
 			
-			strcat(paraImprimir, "L_LLAVE ");
+			strcat(paraImprimir, "L_CORCHETE ");
 		}
 		else if (c==']')
 		{
@@ -315,7 +320,7 @@ void getToken()
 			t.compLex=']';
 			t.pe=buscar("]");
 			
-			strcat(paraImprimir, "R_LLAVE ");			
+			strcat(paraImprimir, "R_CORCHETE ");			
 		}		
 		else if (c=='{')
 		{
@@ -327,7 +332,7 @@ void getToken()
 			t.compLex='{';
 			t.pe=buscar("{");
 			
-			strcat(paraImprimir, "L_CORCHETE ");
+			strcat(paraImprimir, "L_LLAVE ");
 		}
 		else if (c=='}')
 		{
@@ -339,7 +344,7 @@ void getToken()
 			t.compLex='}';
 			t.pe=buscar("}");
 			
-			strcat(paraImprimir, "R_CORCHETE ");
+			strcat(paraImprimir, "R_LLAVE ");
 		}
 		else if (tolower(c)=='f')
 		{
@@ -353,7 +358,7 @@ void getToken()
 				lexema[i]=tolower(c);
 				i++;
 			}else{				
-				leer = 1;
+				leer = 0;
 				sprintf(msg, "No se esperaba '%c'", c); 
 				strcat(paraImprimir, msg);
 				ungetc(c,archivo);
@@ -365,7 +370,7 @@ void getToken()
 				lexema[i]=tolower(c);
 				i++;
 			}else{				
-				leer = 1;
+				leer = 0;
 				sprintf(msg, "No se esperaba '%c'", c); 
 				strcat(paraImprimir, msg);
 				ungetc(c,archivo);
@@ -377,7 +382,7 @@ void getToken()
 				lexema[i]=tolower(c);
 				i++;
 			}else{				
-				leer = 1;
+				leer = 0;
 				sprintf(msg, "No se esperaba '%c'", c); 
 				strcat(paraImprimir, msg);
 				ungetc(c,archivo);
@@ -389,7 +394,7 @@ void getToken()
 				lexema[i]=tolower(c);
 				i++;
 			}else{				
-				leer = 1;
+				leer = 0;
 				sprintf(msg, "No se esperaba '%c' ", c); 
 				strcat(paraImprimir, msg);
 				ungetc(c,archivo);
@@ -418,7 +423,7 @@ void getToken()
 				i++;
 			}else{
 				
-				leer = 1;
+				leer = 0;
 				sprintf(msg, "No se esperaba '%c' ", c); 
 				strcat(paraImprimir, msg);
 				ungetc(c,archivo);
@@ -430,7 +435,7 @@ void getToken()
 				lexema[i]=tolower(c);
 				i++;
 			}else{				
-				leer = 1;
+				leer = 0;
 				sprintf(msg, "No se esperaba '%c' ", c); 
 				strcat(paraImprimir, msg);
 				ungetc(c,archivo);
@@ -442,7 +447,7 @@ void getToken()
 				lexema[i]=tolower(c);
 				i++;
 			}else{				
-				leer = 1;
+				leer = 0;
 				sprintf(msg, "No se esperaba '%c' ", c); 
 				strcat(paraImprimir, msg);
 				ungetc(c,archivo);
@@ -468,7 +473,7 @@ void getToken()
 				lexema[i]=tolower(c);
 				i++;
 			}else{				
-				leer = 1;
+				leer = 0;
 				sprintf(msg, "No se esperaba '%c' ", c); 
 				strcat(paraImprimir, msg);
 				ungetc(c,archivo);
@@ -480,7 +485,7 @@ void getToken()
 				lexema[i]=tolower(c);
 				i++;
 			}else{				
-				leer = 1;
+				leer = 0;
 				sprintf(msg, "No se esperaba '%c' ", c); 
 				strcat(paraImprimir, msg);
 				ungetc(c,archivo);
@@ -492,7 +497,7 @@ void getToken()
 				lexema[i]=tolower(c);
 				i++;
 			}else{				
-				leer = 1;
+				leer = 0;
 				sprintf(msg, "No se esperaba '%c' ", c); 
 				strcat(paraImprimir, msg);
 				ungetc(c,archivo);
@@ -510,7 +515,7 @@ void getToken()
 		}
 		else
 		{
-			leer = 1;
+			leer = 0;
 			sprintf(msg,"--> %c no esperado <--",c);
 			strcat(paraImprimir, msg);
 		}
