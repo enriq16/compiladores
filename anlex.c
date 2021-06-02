@@ -57,11 +57,11 @@ void getToken()
 	{
 		entrada e;
 
-		if (c==' ' || c=='\t')
+		if (c==' ' || c=='\t'){
 			continue;	//eliminar espacios en blanco		
-		else if(!leer)
+		}else if(leer < 1){			
 			continue;
-		else if(c=='\n')
+		}else if(c=='\n')
 		{
 			//incrementar el numero de linea
 			numLinea++;
@@ -110,7 +110,7 @@ void getToken()
 					}else{ 
 						leer = 0;
 						lexema[i] = '\0';						
-						sprintf(msg, "El String '%s', no termina correctamente", lexema); 
+						sprintf(msg, "El String '%s', no termina correctamente ", lexema); 
 						strcat(paraImprimir, msg);
 						if(c==EOF)													
 							ungetc(c,archivo);
