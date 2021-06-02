@@ -29,7 +29,9 @@ char buff[2*TAMBUFF];	// Buffer para lectura de archivo fuente
 char lexema[TAMLEX];	// Utilizado por el analizador lexico
 int delantero=-1;		// Utilizado por el analizador lexico
 int fin=0;				// Utilizado por el analizador lexico
-int numLinea=1;			// Numero de Linea
+int numLinea=0;			// Numero de Linea
+
+char paraImprimir[100];
 
 /**************** Funciones **********************/
 
@@ -48,53 +50,103 @@ void getToken()
 	int acepto=0;
 	int estado=0;
 	char msg[41];
-	entrada e;
+	
+	int leer = 0;//en caso de erro hace que se lea hasta el final de la linea
 
 	while((c=fgetc(archivo))!=EOF)
 	{
-		
-		if (c==' ' || c=='\t')
+		entrada e;
+
+		if (c==' ' || c=='\t' || leer)
 			continue;	//eliminar espacios en blanco
 		else if(c=='\n')
 		{
 			//incrementar el numero de linea
 			numLinea++;
-			continue;
-		}
-		else if (isalpha(c))
-		{
-			//es un identificador (o palabra reservada)
-			i=0;
-			do{
-				lexema[i]=c;
-				i++;
-				c=fgetc(archivo);
-				if (i>=TAMLEX)
-					error("Longitud de Identificador excede tamaño de buffer");
-			}while(isalpha(c) || isdigit(c));
-			lexema[i]='\0';
-			if (c!=EOF)
-				ungetc(c,archivo);
-			else
-				c=0;
-			t.pe=buscar(lexema);
-			t.compLex=t.pe->compLex;
-			if (t.pe->compLex==-1)
-			{
-				strcpy(e.lexema,lexema);
-				e.compLex=ID;
-				insertar(e);
-				t.pe=buscar(lexema);
-				t.compLex=ID;
-			}
 			break;
-		}
+		}else if(c == '"'){
+						
+			i = 0;
+			strcpy(lexema, "");
+			
+			lexema[i]=c;
+			i++;
+			c = fgetc(archivo);
+			//printf("c: '%c'", c);
+				if ( isalpha(c) || isdigit(c) || c == '_' )
+				{
+					//es un identificador (o palabra reservada)
+					
+					do{
+						lexema[i]=c;
+						i++;
+						c=fgetc(archivo);
+						//printf(" c: '%c'", c);
+						if (i>=TAMLEX){							
+							error("Longitud de Identificador excede tamaño de buffer");			
+							break;
+						}
+					}while( isalpha(c) || isdigit(c) || c == '_' || c == ' ' );
+					
+					
+					if (c == '"'){
+						lexema[i] = c;
+						i++;
+						lexema[i]='\0';
+
+						t.pe=buscar(lexema);
+                        t.compLex=t.pe->compLex;
+                        if (t.pe->compLex==-1)
+                        {
+                        	strcpy(e.lexema,lexema);
+                        	e.compLex=STRING;
+                        	insertar(e);
+                        	t.pe=buscar(lexema);
+                        	t.compLex=STRING;
+                        }
+                        strcat(paraImprimir, "STRING ");
+					}else{ 
+						leer = 1;
+						lexema[i] = '\0';						
+						sprintf(msg, "El String '%s', no termina correctamente ", lexema); 
+						strcat(paraImprimir, msg);													
+						ungetc(c,archivo);
+						continue;
+					}														
+				}else if (c == '"'){
+					lexema[i] = c;
+					i++;
+					lexema[i]='\0';
+					t.pe=buscar(lexema);
+                    t.compLex=t.pe->compLex;
+                    if (t.pe->compLex==-1)
+                    {
+                     strcpy(e.lexema,lexema);
+                     e.compLex=STRING;
+                     insertar(e);
+                     t.pe=buscar(lexema);
+                     t.compLex=STRING;
+                    }
+                    
+                    strcat(paraImprimir, "STRING ");										
+				}else{
+					
+					sprintf(msg,"No se esperaba: '%c'",c);
+					strcat(paraImprimir, msg);
+					estado = -1;
+					leer = 1;					
+					ungetc(c,archivo);
+					continue;
+				}
+		}		
 		else if (isdigit(c))
-		{
-				//es un numero
+		{		
+										
 				i=0;
 				estado=0;
 				acepto=0;
+
+				strcpy(lexema, "");
 				lexema[i]=c;
 				
 				while(!acepto)
@@ -126,16 +178,11 @@ void getToken()
 						{
 							lexema[++i]=c;
 							estado=2;
-						}
-						else if(c=='.')
-						{
-							i--;
-							fseek(archivo,-1,SEEK_CUR);
-							estado=6;
-						}
+						}						
 						else{
-							sprintf(msg,"No se esperaba '%c'",c);
-							estado=-1;
+							sprintf(msg,"No se esperaba '%c'",c);							
+							estado = -1;
+							leer = 1;							
 						}
 						break;
 					case 2://la fraccion decimal, pueden seguir los digitos o e
@@ -168,6 +215,7 @@ void getToken()
 						else{
 							sprintf(msg,"No se esperaba '%c'",c);
 							estado=-1;
+							leer = 1;
 						}
 						break;
 					case 4://necesariamente debe venir por lo menos un digito
@@ -193,261 +241,289 @@ void getToken()
 							estado=6;
 						}break;
 					case 6://estado de aceptacion, devolver el caracter correspondiente a otro componente lexico
-						if (c!=EOF)
-							ungetc(c,archivo);
-						else
-							c=0;
+						
+						ungetc(c,archivo);
+						
 						lexema[++i]='\0';
 						acepto=1;
+
 						t.pe=buscar(lexema);
-						if (t.pe->compLex==-1)
-						{
-							strcpy(e.lexema,lexema);
-							e.compLex=NUM;
-							insertar(e);
-							t.pe=buscar(lexema);
-						}
-						t.compLex=NUM;
+                        t.compLex=t.pe->compLex;
+                        if (t.pe->compLex==-1)
+                        {
+                         strcpy(e.lexema,lexema);
+                         e.compLex=NUM;
+                         insertar(e);
+                         t.pe=buscar(lexema);
+                         t.compLex=NUM;
+                        }											
+												
+						strcat(paraImprimir, "NUMBER ");											
 						break;
 					case -1:
-						if (c==EOF)
-							error("No se esperaba el fin de archivo");
-						else
-							error(msg);
-						exit(1);
+												
+						strcat(paraImprimir, msg);
+						ungetc(c,archivo);
+						continue;													
 					}
 				}
-			break;
-		}
-		else if (c=='<') 
-		{
-			//es un operador relacional, averiguar cual
-			c=fgetc(archivo);
-			if (c=='>'){
-				t.compLex=OPREL;
-				t.pe=buscar("<>");
-			}
-			else if (c=='='){
-				t.compLex=OPREL;
-				t.pe=buscar("<=");
-				t.pe=buscar("<=");
-			}
-			else{
-				ungetc(c,archivo);
-				t.compLex=OPREL;
-				t.pe=buscar("<");
-			}
-			break;
-		}
-		else if (c=='>')
-		{
-			//es un operador relacional, averiguar cual
-				c=fgetc(archivo);
-			if (c=='='){
-				t.compLex=OPREL;
-				t.pe=buscar(">=");
-			}
-			else{
-				ungetc(c,archivo);
-				t.compLex=OPREL;
-				t.pe=buscar(">");
-			}
-			break;
-		}
+			
+		}		
 		else if (c==':')
 		{
-			//puede ser un : o un operador de asignacion
-			c=fgetc(archivo);
-			if (c=='='){
-				t.compLex=OPASIGNA;
-				t.pe=buscar(":=");
-			}
-			else{
-				ungetc(c,archivo);
-				t.compLex=':';
-				t.pe=buscar(":");
-			}
-			break;
-		}
-		else if (c=='+')
-		{
-			t.compLex=OPSUMA;
-			t.pe=buscar("+");
-			break;
-		}
-		else if (c=='-')
-		{
-			t.compLex=OPSUMA;
-			t.pe=buscar("-");
-			break;
-		}
-		else if (c=='*')
-		{
-			t.compLex=OPMULT;
-			t.pe=buscar("*");
-			break;
-		}
-		else if (c=='/')
-		{
-			t.compLex=OPMULT;
-			t.pe=buscar("/");
-			break;
-		}
-		else if (c=='=')
-		{
-			t.compLex=OPREL;
-			t.pe=buscar("=");
-			break;
-		}
+			
+
+			e.compLex = ':';			
+			strcpy(e.lexema,":");
+
+			t.compLex=':';
+			t.pe=buscar(":");			
+			
+			strcat(paraImprimir, "DOS_PUNTOS ");			
+		}		
 		else if (c==',')
-		{
+		{   
+			
+
+			e.compLex = ',';			
+			strcpy(e.lexema,",");
+			
 			t.compLex=',';
 			t.pe=buscar(",");
-			break;
-		}
-		else if (c==';')
-		{
-			t.compLex=';';
-			t.pe=buscar(";");
-			break;
-		}
-		else if (c=='.')
-		{
-			t.compLex='.';
-			t.pe=buscar(".");
-			break;
-		}
-		else if (c=='(')
-		{
-			if ((c=fgetc(archivo))=='*')
-			{//es un comentario
-				while(c!=EOF)
-				{
-					c=fgetc(archivo);
-					if (c=='*')
-					{
-						if ((c=fgetc(archivo))==')')
-						{
-							break;
-						}
-					}
-					else if(c=='\n')
-					{
-						//incrementar el numero de linea
-						numLinea++;
-					}
-				}
-				if (c==EOF)
-					error("Se llego al fin de archivo sin finalizar un comentario");
-				continue;
-			}
-			else
-			{
-				ungetc(c,archivo);
-				t.compLex='(';
-				t.pe=buscar("(");
-			}
-			break;
-		}
-		else if (c==')')
-		{
-			t.compLex=')';
-			t.pe=buscar(")");
-			break;
-		}
+			
+			strcat(paraImprimir, "COMA ");
+		}		
 		else if (c=='[')
 		{
+			
+
+			e.compLex = '[';			
+			strcpy(e.lexema,"[");
+
 			t.compLex='[';
 			t.pe=buscar("[");
-			break;
+			
+			strcat(paraImprimir, "L_LLAVE ");
 		}
 		else if (c==']')
 		{
+			
+
+			e.compLex = ']';			
+			strcpy(e.lexema,"]");
+
 			t.compLex=']';
 			t.pe=buscar("]");
-			break;
-		}
-		else if (c=='\'')
-		{//un caracter o una cadena de caracteres
-			i=0;
-			lexema[i]=c;
-			i++;
-			do{
-				c=fgetc(archivo);
-				if (c=='\'')
-				{
-					c=fgetc(archivo);
-					if (c=='\'')
-					{
-						lexema[i]=c;
-						i++;
-						lexema[i]=c;
-						i++;
-					}
-					else
-					{
-						lexema[i]='\'';
-						i++;
-						break;
-					}
-				}
-				else if(c==EOF)
-				{
-					error("Se llego al fin de archivo sin finalizar un literal");
-				}
-				else{
-					lexema[i]=c;
-					i++;
-				}
-			}while(isascii(c));
-			lexema[i]='\0';
-			if (c!=EOF)
-				ungetc(c,archivo);
-			else
-				c=0;
-			t.pe=buscar(lexema);
-			t.compLex=t.pe->compLex;
-			if (t.pe->compLex==-1)
-			{
-				strcpy(e.lexema,lexema);
-				if (strlen(lexema)==3 || strcmp(lexema,"''''")==0)
-					e.compLex=CAR;
-				else
-					e.compLex=LITERAL;
-				insertar(e);
-				t.pe=buscar(lexema);
-				t.compLex=e.compLex;
-			}
-			break;
-		}
+			
+			strcat(paraImprimir, "R_LLAVE ");			
+		}		
 		else if (c=='{')
 		{
-			//elimina el comentario
-			while(c!=EOF)
-			{
-				c=fgetc(archivo);
-				if (c=='}')
-					break;
-				else if(c=='\n')
-				{
-					//incrementar el numero de linea
-					numLinea++;
-				}
-			}
-			if (c==EOF)
-				error("Se llego al fin de archivo sin finalizar un comentario");
+			
+
+			e.compLex = '{';			
+			strcpy(e.lexema,"{");
+
+			t.compLex='{';
+			t.pe=buscar("{");
+			
+			strcat(paraImprimir, "L_CORCHETE ");
 		}
-		else if (c!=EOF)
+		else if (c=='}')
 		{
-			sprintf(msg,"%c no esperado",c);
-			error(msg);
+			
+
+			e.compLex = '}';			
+			strcpy(e.lexema,"}");
+
+			t.compLex='}';
+			t.pe=buscar("}");
+			
+			strcat(paraImprimir, "R_CORCHETE ");
 		}
+		else if (tolower(c)=='f')
+		{
+			
+			i=0;			
+			strcpy(lexema, "");
+			lexema[i]=tolower(c);
+			i++;
+			c=fgetc(archivo);
+			if(tolower(c)=='a'){
+				lexema[i]=tolower(c);
+				i++;
+			}else{				
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c'", c); 
+				strcat(paraImprimir, msg);
+				ungetc(c,archivo);
+				continue;
+			}
+
+			c=fgetc(archivo);
+			if(tolower(c)=='l'){
+				lexema[i]=tolower(c);
+				i++;
+			}else{				
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c'", c); 
+				strcat(paraImprimir, msg);
+				ungetc(c,archivo);
+				continue;
+			}
+
+			c=fgetc(archivo);
+			if(tolower(c)=='s'){
+				lexema[i]=tolower(c);
+				i++;
+			}else{				
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c'", c); 
+				strcat(paraImprimir, msg);
+				ungetc(c,archivo);
+				continue;
+			}
+
+			c=fgetc(archivo);
+			if(tolower(c)=='e'){
+				lexema[i]=tolower(c);
+				i++;
+			}else{				
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c' ", c); 
+				strcat(paraImprimir, msg);
+				ungetc(c,archivo);
+				continue;
+			}
+
+			
+			e.compLex = PR_BOOLEAN;
+			strcpy(e.lexema, lexema);
+
+			t.compLex = PR_BOOLEAN;
+			t.pe=buscar(lexema);
+			
+			strcat(paraImprimir, "PR_FALSE ");
+		}
+		else if (tolower(c)=='t')
+		{
+			
+			i=0;			
+			strcpy(lexema, "");
+			lexema[i]=tolower(c);
+			i++;
+			c=fgetc(archivo);
+			if(tolower(c)=='r'){
+				lexema[i]=tolower(c);
+				i++;
+			}else{
+				
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c' ", c); 
+				strcat(paraImprimir, msg);
+				ungetc(c,archivo);
+				continue;
+			}
+
+			c=fgetc(archivo);
+			if(tolower(c)=='u'){
+				lexema[i]=tolower(c);
+				i++;
+			}else{				
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c' ", c); 
+				strcat(paraImprimir, msg);
+				ungetc(c,archivo);
+				continue;
+			}
+
+			c=fgetc(archivo);
+			if(tolower(c)=='e'){
+				lexema[i]=tolower(c);
+				i++;
+			}else{				
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c' ", c); 
+				strcat(paraImprimir, msg);
+				ungetc(c,archivo);
+				continue;
+			}
+
+
+			
+			e.compLex = PR_BOOLEAN;
+			strcpy(e.lexema, lexema);
+
+			t.compLex = PR_BOOLEAN;
+			t.pe=buscar(lexema);
+						
+			strcat(paraImprimir, "PR_TRUE ");
+		}else if(tolower(c)=='n'){
+			i=0;			
+			strcpy(lexema, "");
+			lexema[i]=tolower(c);
+			i++;
+			c=fgetc(archivo);
+			if(tolower(c)=='u'){
+				lexema[i]=tolower(c);
+				i++;
+			}else{				
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c' ", c); 
+				strcat(paraImprimir, msg);
+				ungetc(c,archivo);
+				continue;
+			}
+
+			c=fgetc(archivo);
+			if(tolower(c)=='l'){
+				lexema[i]=tolower(c);
+				i++;
+			}else{				
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c' ", c); 
+				strcat(paraImprimir, msg);
+				ungetc(c,archivo);
+				continue;
+			}
+
+			c=fgetc(archivo);
+			if(tolower(c)=='l'){
+				lexema[i]=tolower(c);
+				i++;
+			}else{				
+				leer = 1;
+				sprintf(msg, "No se esperaba '%c' ", c); 
+				strcat(paraImprimir, msg);
+				ungetc(c,archivo);
+				continue;
+			}
+
+			
+			e.compLex = PR_NULL;
+			strcpy(e.lexema, lexema);
+
+			t.compLex = PR_NULL;
+			t.pe=buscar(lexema);
+					
+			strcat(paraImprimir, "PR_NULL ");
+		}
+		else
+		{
+			leer = 1;
+			sprintf(msg,"--> %c no esperado <--",c);
+			strcat(paraImprimir, msg);
+		}
+	
 	}
+
 	if (c==EOF)
 	{
-		t.compLex=EOF;
-		// strcpy(e.lexema,"EOF");
+		entrada e;
+		e.compLex=EOF;
 		sprintf(e.lexema,"EOF");
+		
+		t.compLex=EOF;	
 		t.pe=&e;
 	}
 	
@@ -468,8 +544,11 @@ int main(int argc,char* args[])
 			exit(1);
 		}
 		while (t.compLex!=EOF){
+			strcpy(paraImprimir, "");
 			getToken();
-			printf("Lin %d: %s -> %d\n",numLinea,t.pe->lexema,t.compLex);
+			if(strcmp(paraImprimir, "") != 0){				
+				printf("%s\n", paraImprimir);
+			}
 		}
 		fclose(archivo);
 	}else{
