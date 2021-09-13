@@ -92,6 +92,7 @@ void getToken()
 	int estado=0;
 	char msg[41];
 	entrada ee;
+	char cc[2] = "";
 
 	while((c=fgetc(archivo))!=EOF)
 	{
@@ -241,18 +242,21 @@ void getToken()
 				lexema[i]=c;
 				i++;
 				c=fgetc(archivo);
+
+				cc[0] = c;
+				cc[1] = '\0';
 				if (i>=TAMLEX){
 					//sprintf(msg, "Se excede tamnho buffer.");
 					leerHastaFinLinea = 1;
 					break;
 				}
 
-			}while(isalpha(c) || isdigit(c) || c=='_' || c==' ' || 'á');
-			
+			}while(isalpha(c) || isdigit(c) || c=='_' || c==' ' );
+			/*
 			lexema[i]='X';			
 			lexema[++i]='\0';
 			printf("%s*\n", lexema);
-
+			*/		
 			if(c=='"' && !leerHastaFinLinea){/* Cierre de String */
 				lexema[i]=c;			
 				lexema[++i]='\0';
@@ -269,6 +273,8 @@ void getToken()
 			    }
 			}
 			else{
+				sprintf(msg,"-->codigo char: %d  char: %c<--",c,c);
+
 				leerHastaFinLinea = 1;
 				ungetc(c,archivo);
 				lexema[i]='\0';	
