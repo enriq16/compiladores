@@ -21,6 +21,9 @@
 #define TAMLEX 		50
 #define TAMHASH 	101
 
+#define ERR_TOKEN   -2
+#define EMPTY_STRING 555
+
 /************* Estructuras ********************/
 
 typedef struct entrada{
@@ -46,4 +49,26 @@ void initTabla();
 void initTablaSimbolos();
 void getToken();
 
+void error_sint(int *tokens, int i);
 void addToken();
+
+void match(char* expToken);
+void json();
+void element();
+void array();
+void object();
+void atribute_list();
+void atribute_list_aux();
+void element_list();
+void element_list_aux();
+void atribute();
+void atribute_name();
+void atribute_value();
+
+/* Para manejo de errores */
+int token_in( int *tokens, int tam, int incluir_eof );
+void scan_to(int *token_in, int tam, int incluir_eof);
+int check_input(int *firsts, int x, int *follow, int y);
+int* unir(int *firsts, int x, int *follows, int y); 
+
+
