@@ -40,9 +40,9 @@ int numLinea=1;			// Numero de Linea
 
 // Rutinas del analizador lexico
 char* print_token();
-char* print_token(){
+char* print_token(int compLex){
 
-	switch(t.compLex){
+	switch(compLex){
 		case ',':
 			return "COMA";			
 		break;
@@ -665,6 +665,7 @@ void scan_to(int *tokens, int tam, int incluir_eof){
 	while(!token_in(tokens, tam, incluir_eof)){
 		getToken();
 	}
+
 }
 
 int check_input(int *firsts, int x, int *follows, int y){
@@ -677,15 +678,17 @@ int check_input(int *firsts, int x, int *follows, int y){
 
 
 	if(!result){
+		
 		error_sint(firsts, x);
-		scan_to(unir(firsts, x, follows, y), x+y, 1);	
+		//scan_to(unir(firsts, x, follows, y), x+y, 1);	
+		scan_to(firsts, x, 1);
 	}
 	return result;	
 }
 
 int* unir(int *firsts, int x, int *follows, int y){
 	int *aux = malloc(sizeof(int) * (x+y));
-	for (int i = 0; i < x+y; ++i){
+	for (int i = 0; i < x+y; i++){
 		if(i < x)
 			aux[i] = firsts[i];
 		else 
