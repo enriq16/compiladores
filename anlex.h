@@ -68,7 +68,7 @@ void atribute_value();
 /* Para manejo de errores */
 int token_in( int *tokens, int tam, int incluir_eof );
 void scan_to(int *token_in, int tam, int incluir_eof);
-int check_input(int *firsts, int x, int *follow, int y);
+int check_input(int *firsts, int x, int *follow, int y, int caso);
 int* unir(int *firsts, int x, int *follows, int y); 
 
 
