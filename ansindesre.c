@@ -485,9 +485,9 @@ int pri_json[] = {'{', '['};
 int sig_json[] = {EOF};
 
 void json(){// #1		
-	if( check_input(pri_json, 2, sig_json, 1) ){
+	if( check_input(pri_json, 2, sig_json, 1, 0) ){
 		element();
-		check_input(sig_json, 1, pri_json, 2);	
+		check_input(sig_json, 1, pri_json, 2, 1);	
 	}	
 }
 
@@ -497,24 +497,24 @@ int pri_element[] = {'{', '['};
 int sig_element[] = {',', ']', '}', EOF};
 
 void element(){// #2
-	if(check_input(pri_element, 2, sig_element, 4)){
+	if(check_input(pri_element, 2, sig_element, 4, 0)){
 		if(t.compLex == '{'){
 			object();
 		}else if(t.compLex == '['){
 			array(); 
 		}
-		check_input(sig_element, 4, pri_element, 2);
+		check_input(sig_element, 4, pri_element, 2, 1);
 	}	
 }
 
 int pri_array[]  = {'['};
 int sig_array[]  = {',', ']', '}', EOF};
 void array(){// #3
-	if( check_input(pri_array, 1, sig_array, 4) ){
+	if( check_input(pri_array, 1, sig_array, 4, 0) ){
 		match("[");
 		element_list(); 
 		match("]");
-		check_input(sig_array, 4, pri_array, 1);
+		check_input(sig_array, 4, pri_array, 1, 1);
 	}	
 }
 
@@ -522,11 +522,11 @@ int pri_object[] = {'{'};
 int sig_object[] = {',', '}', ']', EOF};
 
 void object(){// #4
-	if( check_input(pri_object, 1, sig_object, 4) ){
+	if( check_input(pri_object, 1, sig_object, 4, 0) ){
 		match("{");
 		atribute_list(); 
 		match("}");
-		check_input(sig_object, 4, pri_object, 1);
+		check_input(sig_object, 4, pri_object, 1, 1);
 	}	
 }
 
@@ -536,13 +536,14 @@ int sig_at_list[] = {'}'};
 
 /* Puede no venir */
 void atribute_list(){// #5
-	if( check_input(pri_at_list, 2, sig_at_list, 1) ){	
+	if( check_input(pri_at_list, 2, sig_at_list, 1, 0) ){	
 		if(t.compLex == STRING){
 			atribute(); 
 			atribute_list_aux();
+			
 		}
-
-		check_input(sig_at_list, 1, pri_at_list, 2);
+		check_input(sig_at_list, 1, pri_at_list, 2, 1);
+		
 	}	
 }
 
@@ -551,13 +552,14 @@ int pri_at_list_aux[] = {',', EMPTY_STRING};
 int sig_at_list_aux[] = {'}'};
 /* Puede no venir */
 void atribute_list_aux(){// #6
-	if( check_input(pri_at_list_aux, 2, sig_at_list_aux, 1) ){	
+	if( check_input(pri_at_list_aux, 2, sig_at_list_aux, 1,  0) ){	
 		if(t.compLex == ','){
 			match(",");
 			atribute();
 			atribute_list_aux();
+			
 		}
-		check_input(sig_at_list_aux, 1, pri_at_list_aux, 2);
+		check_input(sig_at_list_aux, 1, pri_at_list_aux, 2, 1);
 	}	
 }
 
@@ -566,15 +568,13 @@ int sig_element_list[] = {']'};
 
 /* Puede no venir */
 void element_list(){// #7
-	if( check_input(pri_element_list, 3, sig_element_list, 1) ){	
+	if( check_input(pri_element_list, 3, sig_element_list, 1, 0) ){	
 		if(t.compLex == '{' || t.compLex == '['){
 			element();
 			element_list_aux();
+			
 		}
-		check_input(sig_element_list, 1, pri_element_list, 3);
-
-
-
+		check_input(sig_element_list, 1, pri_element_list, 3, 1);
 	}	
 }
 
@@ -583,13 +583,14 @@ int sig_element_list_aux[] = {']'};
 
 /* Puede no venir */
 void element_list_aux(){// #8
-	if( check_input(pri_element_list_aux, 2, sig_element_list_aux, 1) ){	
+	if( check_input(pri_element_list_aux, 2, sig_element_list_aux, 1, 0) ){	
 		if(t.compLex == ','){
 			match(",");
 			element();
 			element_list_aux();
+			
 		}
-		check_input(sig_element_list_aux, 1, pri_element_list_aux, 2);
+		check_input(sig_element_list_aux, 1, pri_element_list_aux, 2, 1);
 	}
 }
 
@@ -597,12 +598,11 @@ int pri_atribute[] = {STRING};
 int sig_atribute[] = {',', '}'};
 
 void atribute(){// #9
-	if(check_input(pri_atribute, 1, sig_atribute,2)){	
+	if(check_input(pri_atribute, 1, sig_atribute,2, 0)){	
 		atribute_name();
 		match(":");
 		atribute_value();
-
-		check_input(sig_atribute, 2, pri_atribute, 1);
+		
 	}	
 }
 
@@ -611,9 +611,9 @@ int pri_atribute_name[] = {STRING};
 int sig_atribute_name[] = {':'};
 
 void atribute_name(){// #10
-	if(check_input(pri_atribute, 1, sig_atribute_name, 1)){
+	if(check_input(pri_atribute, 1, sig_atribute_name, 1, 0)){
 		match(t.pe->lexema);
-		check_input(sig_atribute_name, 1, pri_atribute, 1);
+		check_input(sig_atribute_name, 1, pri_atribute, 1, 1);
 	}	
 }
 
@@ -622,7 +622,7 @@ int pri_atribute_value[] = {NUM,PR_TRUE,PR_FALSE,PR_NULL,STRING,'{','['};
 int sig_atribute_value[] = {',', '}'};
 
 void atribute_value(){// #11
-	if(check_input(pri_atribute_value, 9, sig_atribute_value, 2)){
+	if(check_input(pri_atribute_value, 9, sig_atribute_value, 2, 0)){
 	switch(t.compLex){
 		case PR_TRUE:
 			match("true");
@@ -643,7 +643,7 @@ void atribute_value(){// #11
 			element();
 		break;
 	}
-	check_input(sig_atribute_value, 2, pri_atribute_value, 9);
+	check_input(sig_atribute_value, 2, pri_atribute_value, 9, 1);
 	}
 }
 
@@ -665,12 +665,13 @@ int token_in( int *tokens, int tam, int incluir_eof){
 
 void scan_to(int *tokens, int tam, int incluir_eof){
 	while(!token_in(tokens, tam, incluir_eof)){
+		printf("\nToken Actual: %s",t.pe->lexema);
 		getToken();
 	}
 
 }
 
-int check_input(int *firsts, int x, int *follows, int y){
+int check_input(int *firsts, int x, int *follows, int y, int caso){
 	int i = 0;	
 	int result = token_in(firsts, x, 0);
 
@@ -683,7 +684,10 @@ int check_input(int *firsts, int x, int *follows, int y){
 		
 		error_sint(firsts, x);
 		//scan_to(unir(firsts, x, follows, y), x+y, 1);	
-		scan_to(firsts, x, 1);
+		if(caso == 0)
+			scan_to(follows, y, 1);
+		else
+			scan_to(firsts, x, 1);
 	}
 	return result;	
 }
