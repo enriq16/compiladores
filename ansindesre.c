@@ -606,6 +606,8 @@ void atribute(){// #9
 	}	
 }
 
+
+int pri_atribute_name[] = {STRING};
 int sig_atribute_name[] = {':'};
 
 void atribute_name(){// #10
